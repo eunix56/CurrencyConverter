@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/bg_layout_graph">
+
+    <TableLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="40dp">
+
+        <TableRow
+            android:weightSum="2">
+            <TextView
+                android:id="@+id/tv_30_days"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Past 30 days"
+                android:layout_weight="1"
+                android:textSize="20sp"
+                android:layout_marginLeft="50dp"
+                android:layout_marginStart="50dp"
+                android:fontFamily="@font/nunito_semibold"
+                android:textColor="#D3F2FB"/>
+
+            <TextView
+                android:id="@+id/tv_90_days"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Past 90 days"
+                android:layout_weight="1"
+                android:fontFamily="@font/nunito_semibold"
+                android:textSize="20sp"
+                android:textColor="#3788E5"/>
+        </TableRow>
+
+        <TableRow android:weightSum="2"
+            android:layout_marginTop="5dp">
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:src="@drawable/graph_indicator_dot"
+                />
+        </TableRow>
+
+    </TableLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
