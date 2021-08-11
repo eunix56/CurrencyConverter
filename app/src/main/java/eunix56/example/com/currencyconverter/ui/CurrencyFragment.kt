@@ -2,6 +2,7 @@ package eunix56.example.com.currencyconverter.ui
 
 
 import android.content.Context
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.Gravity
@@ -9,24 +10,27 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
-import com.squareup.picasso.Picasso
+import com.github.mikephil.charting.data.Entry
 import eunix56.example.com.currencyconverter.R
+import eunix56.example.com.currencyconverter.data.db.entity.CurrencyExchangeRate
+import eunix56.example.com.currencyconverter.data.db.entity.LastNumOfDaysExchangeRate
 import eunix56.example.com.currencyconverter.data.db.entity.model.CurrencyItem
-import eunix56.example.com.currencyconverter.data.db.entity.model.RatesValue
+import eunix56.example.com.currencyconverter.internal.utils.DataResult
+import eunix56.example.com.currencyconverter.internal.utils.DateUtils
 import eunix56.example.com.currencyconverter.internal.utils.StringUtils
 import eunix56.example.com.currencyconverter.ui.adapter.CurrencySpinnerArrayAdapter
 import eunix56.example.com.currencyconverter.ui.base.ScopedFragment
+import kotlinx.android.synthetic.main.graph_layout.*
 import kotlinx.android.synthetic.main.screen_top_layout.*
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.closestKodein
 import org.kodein.di.generic.instance
-import androidx.core.widget.doOnTextChanged as doOnTextChanged1
+import org.threeten.bp.ZonedDateTime
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -37,6 +41,8 @@ import androidx.core.widget.doOnTextChanged as doOnTextChanged1
  */
 
 const val PARCEL_CURRENCY_ITEMS = "currency_item_list"
+const val THIRTY_DAYS = 0
+const val NINETY_DAYS = 1
 
 class CurrencyFragment : ScopedFragment(), KodeinAware {
     override val kodein by  closestKodein()
@@ -49,8 +55,8 @@ class CurrencyFragment : ScopedFragment(), KodeinAware {
     private var selectedFirstCurrencyString: String = ""
     private var selectedFirstDoubleValue: Double = 0.0
     private var currencyMap: Map<String, Any>? = null
-    private var firstCurrencyString: String = ""
-    private lateinit var ratesValue: RatesValue
+    private var selectedIndex = 0
+    private var dateList: ArrayList<String> = ArrayList()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -76,23 +82,57 @@ class CurrencyFragment : ScopedFragment(), KodeinAware {
         et_second_currency.isEnabled = false
 
         currencyRates.observe(viewLifecycleOwner, Observer { currencyRate ->
-            ratesValue = RatesValue(currencyRate.rates)
-            currencyMap = ratesValue.getData()
-            firstCurrencyString = currencyRate.base
+            if (currencyRate.status == DataResult.Status.SUCCESS) {
+                if (currencyRate.data == null)
+                    return@Observer
 
-            if (!currencyMap.isNullOrEmpty()) {
-                currencyMap?.keys?.forEach {
-                    currencyItemsList.add(StringUtils().currencyItemUrl(it))
-                }
-                setupFirstCurrency(firstCurrencyString)
-                setupSecondCurrency(currencyItemsList[0].currencyName)
-                setUpSpinner(context, currencyItemsList, firstCurrencyString)
+                setViewForSuccess(currencyRate.data, context)
+            } else if (currencyRate.status == DataResult.Status.ERROR) {
+//                displayMessage(currencyRate.message)
+            }
 
-                val args = Bundle()
-                args.putParcelableArrayList(PARCEL_CURRENCY_ITEMS, currencyItemsList)
-                openSettingsFragment(args)
+        })
+
+        val historyRateValue = viewModel.getHistoryRates(getSelectedDate(selectedIndex), DateUtils.getNowDateString())
+
+        historyRateValue.observe(viewLifecycleOwner, Observer { historyRate ->
+            if (historyRate.status == DataResult.Status.SUCCESS) {
+                if (historyRate.data == null)
+                    return@Observer
+
+                setupChart(historyRate.data)
             }
         })
+
+        setupGraphIndex()
+    }
+
+    private fun getSelectedDate(selectedIndex: Int): String {
+        return if (selectedIndex == THIRTY_DAYS) {
+            DateUtils.convertToString(DateUtils.getLastThirtyDaysDate(), "yyyy-MM-dd")
+        } else {
+            DateUtils.convertToString(DateUtils.getLastNinetyDaysDate(), "yyyy-MM-dd")
+        }
+    }
+
+    private fun setViewForSuccess(currencyRate: CurrencyExchangeRate, context: Context) {
+        currencyMap = currencyRate.rates
+
+        if (!currencyMap.isNullOrEmpty()) {
+            currencyMap?.keys?.forEach {
+                currencyItemsList.add(StringUtils().currencyItemUrl(it))
+            }
+
+            selectedFirstCurrencyString = currencyRate.base
+            selectedSecondCurrencyString = currencyItemsList[0].currencyName
+            setupFirstCurrency(selectedFirstCurrencyString)
+            setupSecondCurrency(selectedSecondCurrencyString)
+            setUpSpinner(context, currencyItemsList, selectedFirstCurrencyString)
+
+            val args = Bundle()
+            args.putParcelableArrayList(PARCEL_CURRENCY_ITEMS, currencyItemsList)
+            openSettingsFragment(args)
+        }
     }
 
     private fun hideProgressShowFirstTexts() {
@@ -130,6 +170,21 @@ class CurrencyFragment : ScopedFragment(), KodeinAware {
         btn_convert_currency.setOnClickListener {
             setupEditTextForRates(selectedSecondDoubleValue)
         }
+    }
+
+    private fun setupGraphIndex() {
+        tv_30_days.setOnClickListener{
+            selectedIndex = 0
+            iv_select_past_30.visibility = View.VISIBLE
+            iv_select_past_90.visibility = View.GONE
+        }
+
+        tv_90_days.setOnClickListener {
+            selectedIndex = 1
+            iv_select_past_30.visibility = View.GONE
+            iv_select_past_90.visibility = View.VISIBLE
+        }
+
     }
 
     private fun setupFirstCurrency(selectedCurrency: String?) {
@@ -199,6 +254,43 @@ class CurrencyFragment : ScopedFragment(), KodeinAware {
             }
             gravity = Gravity.CENTER
         }
+    }
+
+    private fun displayMessage() {
+
+    }
+
+    private fun setupChart(historyEntry: LastNumOfDaysExchangeRate) {
+        val graphDrawable = context?.resources?.getDrawable(R.drawable.bg_graph)
+        val graphHelper = context?.let { GraphHelper(it, currency_graph, selectedFirstCurrencyString, selectedSecondCurrencyString) }
+        graphHelper?.init()
+
+        graphHelper?.setLineChartEntries(setupGraph(historyEntry), "currency_graph", graphDrawable!!, dateList)
+    }
+
+    private fun setupGraph(historyEntry: LastNumOfDaysExchangeRate): ArrayList<Entry> {
+        var firstCurrencyVal: Double
+        var secondCurrencyVal: Double
+        var entryVal: Double
+        var date: ZonedDateTime
+        var count = 0
+        val listOfEntry: ArrayList<Entry> = ArrayList()
+        historyEntry.lastNumOfDaysRates.forEach {
+            count++
+
+            date = DateUtils.convertToDate(it.key)
+
+            firstCurrencyVal = it.value.getValue(selectedFirstCurrencyString)
+
+            secondCurrencyVal = it.value.getValue(selectedSecondCurrencyString)
+
+            entryVal = 1/ firstCurrencyVal.times(secondCurrencyVal)
+
+            if (count % 6 == 0)
+                listOfEntry.add (Entry(date.toLocalDate().toEpochDay().toFloat(), entryVal.toFloat()))
+        }
+
+        return listOfEntry
     }
 
 }

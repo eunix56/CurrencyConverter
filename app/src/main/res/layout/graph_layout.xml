@@ -6,6 +6,7 @@
     android:background="@drawable/bg_layout_graph">
 
     <TableLayout
+        android:id="@+id/tl_graph_header"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -22,11 +23,11 @@
                 android:layout_height="wrap_content"
                 android:text="Past 30 days"
                 android:layout_weight="1"
-                android:textSize="20sp"
-                android:layout_marginLeft="50dp"
-                android:layout_marginStart="50dp"
+                android:textSize="17sp"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center_horizontal"
                 android:fontFamily="@font/nunito_semibold"
-                android:textColor="#D3F2FB"/>
+                android:textColor="@color/select_graph_text" />
 
             <TextView
                 android:id="@+id/tv_90_days"
@@ -34,21 +35,52 @@
                 android:layout_height="wrap_content"
                 android:text="Past 90 days"
                 android:layout_weight="1"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center_horizontal"
                 android:fontFamily="@font/nunito_semibold"
-                android:textSize="20sp"
-                android:textColor="#3788E5"/>
+                android:textSize="17sp"
+                android:textColor="@color/select_graph_text"/>
         </TableRow>
 
         <TableRow android:weightSum="2"
             android:layout_marginTop="5dp">
             <ImageView
+                android:id="@+id/iv_select_past_30"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:src="@drawable/graph_indicator_dot"
                 />
+
+            <ImageView
+                android:id="@+id/iv_select_past_90"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:visibility="gone"
+                android:src="@drawable/graph_indicator_dot"
+                />
         </TableRow>
 
     </TableLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/tl_graph_header"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:layout_marginTop="16dp"
+        >
+
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/currency_graph"
+            android:layout_width="match_parent"
+            android:layout_height="350dp"
+            />
+
+    </LinearLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

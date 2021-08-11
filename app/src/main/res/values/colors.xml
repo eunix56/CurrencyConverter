@@ -6,6 +6,7 @@
     <color name="colorPaleBlue">#A0C1E3</color>
     <color name="colorSkyBlue">#52A2C7</color>
     <color name="colorBlue">#0075FF</color>
+    <color name="colorGraphFade">#000075FF</color>
     <color name="colorDarkBlue">#012CEA</color>
     <color name="colorNavyBlue">#0021AF</color>
     <color name="colorGreen">#00D998</color>
@@ -14,4 +15,7 @@
     <color name="colorTextCurrency">#CDCDCD</color>
     <color name="colorValueCurrency">#5B5B5B</color>
     <color name="colorSpinnerText">#9C9C9C</color>
+    <color name="text_unselected_graph">#3788E5</color>
+    <color name="text_selected_graph">#D3F2FB</color>
+    <color name="color_whitish_green">#E4FEFC</color>
 </resources>

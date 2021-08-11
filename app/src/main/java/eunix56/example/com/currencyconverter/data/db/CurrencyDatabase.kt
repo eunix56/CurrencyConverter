@@ -6,16 +6,19 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import eunix56.example.com.currencyconverter.data.db.entity.CurrencyExchangeRate
-import eunix56.example.com.currencyconverter.data.db.entity.model.CurrencyItem
+import eunix56.example.com.currencyconverter.data.db.entity.LastNumOfDaysExchangeRate
 
 @Database(
-    entities = [CurrencyExchangeRate::class],
+    entities = [CurrencyExchangeRate::class, LastNumOfDaysExchangeRate::class],
     version = 1,
     exportSchema = false
 )
 
+@TypeConverters(MapStringDoubleTypeConverter::class, MapStringStringDoubleTypeConverter::class)
+
 abstract class CurrencyDatabase: RoomDatabase() {
     abstract fun currencyRatesDao(): CurrencyExchangeRateDao
+    abstract fun historyRatesDao(): LastNumOfDaysExchangeRateDao
 
     companion object {
         @Volatile private var instance: CurrencyDatabase? = null

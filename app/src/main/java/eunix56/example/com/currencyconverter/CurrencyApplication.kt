@@ -23,10 +23,11 @@ class CurrencyApplication: Application(), KodeinAware {
 
         bind() from singleton { CurrencyDatabase(instance()) }
         bind() from singleton { instance<CurrencyDatabase>().currencyRatesDao() }
+        bind() from singleton { instance<CurrencyDatabase>().historyRatesDao() }
         bind<ConnectivityInterceptor>() with singleton { ConnectivityInterceptorImpl(instance()) }
         bind() from singleton { ExchangeRateApiService(instance()) }
         bind<CurrencyNetworkDataSource>() with singleton { CurrencyNetworkDataSourceImpl(instance())}
-        bind<CurrencyConverterRepository>() with singleton { CurrencyConverterRepositoryImpl(instance(), instance()) }
+        bind<CurrencyConverterRepository>() with singleton { CurrencyConverterRepositoryImpl(instance(), instance(), instance()) }
         bind() from provider { CurrencyViewModelFactory(instance()) }
     }
 

@@ -15,8 +15,7 @@ const val CURRENT_CURRENCY_RATES = 0
 data class CurrencyExchangeRate(
     val base: String,
     val date: String,
-    @Embedded(prefix = "currency_")
-    val rates: Rates
+    val rates: Map<String, Double>
 ) {
     @PrimaryKey(autoGenerate = false)
     var id:Int = CURRENT_CURRENCY_RATES
